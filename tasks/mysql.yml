@@ -1,4 +1,7 @@
 ---
+- set_fact:
+    mysql_root_password: "kaka123"
+
 - name: Set MySQL root password
   ansible.builtin.debconf:
     name: mariadb-server
