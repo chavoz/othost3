@@ -10,11 +10,10 @@
 - name: Set root password for MySQL
   become: true
   become_user: root
-  lineinfile:
-    path: /etc/mysql/mariadb.conf.d/50-server.cnf
-    regexp: '^#?\\s*?password\\s*=\\s*?$'
-    line: 'password = yourpassword'
-    state: present
+  mysql_user:
+    name: root
+    password: kaka123
+    login_unix_socket: /var/run/mysqld/mysqld.sock
 
 - name: Change MySQL charset to prevent MySQL error 1709
   template:
