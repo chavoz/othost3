@@ -1,19 +1,4 @@
 ---
-- set_fact:
-    mysql_root_password: "kaka123"
-
-- name: Set MySQL root password
-  ansible.builtin.debconf:
-    name: mariadb-server
-    question: "{{ item }}"
-    value: "{{ mysql_root_password }}"
-    vtype: password
-  loop:
-    - mysql_root_password
-    - mysql-server/root_password
-    - mysql-server/root_password_again
-  when: ansible_os_family == 'Debian' or ansible_os_family == 'Ubuntu'
-
 - name: Install MySQL Server and backup packages
   apt:
     state: latest
@@ -22,13 +7,14 @@
       - python3-mysqldb
       - automysqlbackup
 
-- name: Create /root/.my.cnf file
-  template:
-    src: root_my.cnf.j2
-    dest: /root/.my.cnf
-    owner: root
-    group: root
-    mode: 0600
+- name: Set root password for MySQL
+  become: true
+  become_user: root
+  lineinfile:
+    path: /etc/mysql/mariadb.conf.d/50-server.cnf
+    regexp: '^#?\\s*?password\\s*=\\s*?$'
+    line: 'password = yourpassword'
+    state: present
 
 - name: Change MySQL charset to prevent MySQL error 1709
   template:
@@ -44,7 +30,7 @@
     enabled: true
 
 - name: Parse existing .my.cnf
-  shell: grep -s pass /home/pxm/.my.cnf | sed 's/password=//'
+  shell: grep -s pass /home/otsmanager/.my.cnf | sed 's/password=//'
   register: existingpass
 
 - name: Generate random MySQL otsmanager password
@@ -57,7 +43,7 @@
 
 - name: Set MySQL otsmanager password (localhost)
   mysql_user:
-    name: pxm
+    name: otsmanager
     password: "{{ mysql_otsmanager_pass }}"
     host: localhost
     priv: "*.*:ALL,GRANT"
@@ -66,14 +52,14 @@
 - name: Save MySQL otsmanager password
   template:
     src: .my.cnf
-    dest: /home/pxm/.my.cnf
-    owner: pxm
-    group: pxm
+    dest: /home/otsmanager/.my.cnf
+    owner: otsmanager
+    group: otsmanager
     mode: 0600
   
 - name: Set MySQL otsmanager password (%)
   mysql_user:
-    name: pxm
+    name: otsmanager
     password: "{{ mysql_otsmanager_pass }}"
     host: "%"
     priv: "*.*:ALL,GRANT"
@@ -111,4 +97,4 @@
   file:
     path: /var/lib/automysqlbackup
     state: directory
-    group: pxm
+    group: otsmanager
