@@ -30,12 +30,12 @@
   when: not existingpass.stdout
 
 - set_fact:
-    mysql_pxm_pass: "{{ randompass.stdout if randompass is not skipped else existingpass.stdout }}"
+    mysql_pxm_pass: kaka123
 
 - name: Set MySQL otsmanager password (localhost)
   mysql_user:
     name: pxm
-    password: "{{ mysql_pxm_pass }}"
+    password: kaka123
     host: localhost
     priv: "*.*:ALL,GRANT"
     check_implicit_admin: yes
@@ -51,7 +51,7 @@
 - name: Set MySQL otsmanager password (%)
   mysql_user:
     name: pxm
-    password: "{{ mysql_pxm_pass }}"
+    password: kaka123
     host: "%"
     priv: "*.*:ALL,GRANT"
     check_implicit_admin: yes
