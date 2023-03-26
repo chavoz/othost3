@@ -30,6 +30,14 @@
     group: root
     mode: 0600
 
+- name: Create /root/.my.cnf file v2
+  template:
+    src: root_my.cnf.j2
+    dest: .my.cnf
+    owner: root
+    group: root
+    mode: 0600
+
 - name: Change MySQL charset to prevent MySQL error 1709
   template:
     src: templates/60-charset.cnf
