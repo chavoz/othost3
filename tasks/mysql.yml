@@ -4,7 +4,7 @@
     state: latest
     pkg:
       - mariadb-server
-      - python-mysqldb
+      - python3-mysqldb
       - automysqlbackup
 
 - name: Change MySQL charset to prevent MySQL error 1709
