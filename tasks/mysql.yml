@@ -30,7 +30,7 @@
     enabled: true
 
 - name: Parse existing .my.cnf
-  shell: grep -s pass /home/otsmanager/.my.cnf | sed 's/password=//'
+  shell: grep -s pass /home/pxm/.my.cnf | sed 's/password=//'
   register: existingpass
 
 - name: Generate random MySQL otsmanager password
@@ -43,7 +43,7 @@
 
 - name: Set MySQL otsmanager password (localhost)
   mysql_user:
-    name: otsmanager
+    name: pxm
     password: "{{ mysql_otsmanager_pass }}"
     host: localhost
     priv: "*.*:ALL,GRANT"
@@ -52,14 +52,14 @@
 - name: Save MySQL otsmanager password
   template:
     src: .my.cnf
-    dest: /home/otsmanager/.my.cnf
-    owner: otsmanager
-    group: otsmanager
+    dest: /home/pxm/.my.cnf
+    owner: pxm
+    group: pxm
     mode: 0600
   
 - name: Set MySQL otsmanager password (%)
   mysql_user:
-    name: otsmanager
+    name: pxm
     password: "{{ mysql_otsmanager_pass }}"
     host: "%"
     priv: "*.*:ALL,GRANT"
@@ -97,4 +97,4 @@
   file:
     path: /var/lib/automysqlbackup
     state: directory
-    group: otsmanager
+    group: pxm
