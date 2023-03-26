@@ -1,4 +1,16 @@
 ---
+- name: Set MySQL root password
+  ansible.builtin.debconf:
+    name: mariadb-server
+    question: "{{ item }}"
+    value: "{{ mysql_root_password }}"
+    vtype: password
+  loop:
+    - mysql_root_password
+    - mysql-server/root_password
+    - mysql-server/root_password_again
+  when: ansible_os_family == 'Debian' or ansible_os_family == 'Ubuntu'
+
 - name: Install MySQL Server and backup packages
   apt:
     state: latest
@@ -6,6 +18,14 @@
       - mariadb-server
       - python3-mysqldb
       - automysqlbackup
+
+- name: Create /root/.my.cnf file
+  template:
+    src: root_my.cnf.j2
+    dest: /root/.my.cnf
+    owner: root
+    group: root
+    mode: 0600
 
 - name: Change MySQL charset to prevent MySQL error 1709
   template:
