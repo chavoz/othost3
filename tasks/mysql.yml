@@ -7,14 +7,6 @@
       - python3-mysqldb
       - automysqlbackup
 
-- name: Set root password for MySQL
-  become: true
-  become_user: root
-  mysql_user:
-    name: root
-    password: kaka123
-    login_unix_socket: /var/run/mysqld/mysqld.sock
-
 - name: Change MySQL charset to prevent MySQL error 1709
   template:
     src: templates/60-charset.cnf
