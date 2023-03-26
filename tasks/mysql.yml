@@ -53,6 +53,7 @@
     name: pxm
     password: kaka123
     host: "%"
+    login_unix_socket: /var/run/mysqld/mysqld.sock
     priv: "*.*:ALL,GRANT"
     check_implicit_admin: yes
 
