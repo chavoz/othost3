@@ -1,0 +1,90 @@
+---
+- hosts: all
+  handlers:
+    - name: reload systemd
+      command: /bin/systemctl daemon-reload
+
+    - name: restart systemd-journald
+      service:
+        name: systemd-journald
+        state: restarted
+
+    - name: restart nginx
+      service:
+        name: nginx
+        state: restarted
+
+    - name: restart php7.4-fpm
+      service:
+        name: php7.4-fpm
+        state: restarted
+
+    - name: restart mysql
+      service:
+        name: mysql
+        state: restarted
+
+  tasks:
+    - name: Fail if not running on Ubuntu
+      fail:
+        msg: This playbook only works on Ubuntu systems!
+      when: ansible_distribution != 'Ubuntu'
+      tags: always
+
+    - name: Fail if Ubuntu older than 20.04
+      fail:
+        msg: This playbook requires Ubuntu >= 20.04
+      when: ansible_distribution_major_version|int < 20
+      tags: always
+
+    - name: Check available PHP package name/version
+      shell: apt-cache show php-fpm | grep Depends | head | awk '{print $2}'
+      register: php_version_query
+      changed_when: False
+      tags: always
+
+    - name: Register available PHP package name/version
+      set_fact:
+        # e.g.: php7.3-fpm
+        php_fpm_package_name: "{{ php_version_query.stdout }}"
+        # e.g.: php7.3
+        php_version: "{{ php_version_query.stdout.split('-')[0] }}"
+        # e.g.: 7.3
+        php_version_number: "{{ php_version_query.stdout.split('-')[0][3:] }}"
+      tags: always
+
+    - include: tasks/systemd.yml
+      tags:
+        - default
+        - systemd
+
+    - include: tasks/general.yml
+      tags:
+        - default
+        - general
+
+    - include: tasks/mysql.yml
+      tags:
+        - default
+        - mysql
+
+    - include: tasks/php-fpm.yml
+      tags:
+        - default
+        - php-fpm
+
+    - include: tasks/nginx.yml
+      tags:
+        - default
+        - nginx
+
+    - include: tasks/phpmyadmin.yml
+      tags:
+        - default
+        - pma
+
+    - include: tasks/general-last.yml
+      tags:
+        - default
+        - general
+

@@ -1,0 +1,44 @@
+---
+- name: Install debconf to set preseed info
+  apt:
+    pkg: debconf-utils
+
+- name: Set preseed info phpmyadmin/dbconfig-install
+  debconf:
+    name: phpmyadmin
+    question: phpmyadmin/dbconfig-install
+    value: true
+    vtype: boolean
+
+- name: Set preseed info phpmyadmin/app-password-confirm
+  debconf:
+    name: phpmyadmin
+    question: phpmyadmin/app-password-confirm
+    value: ''
+    vtype: password
+
+- name: Set preseed info phpmyadmin/mysql/admin-pass
+  debconf:
+    name: phpmyadmin
+    question: phpmyadmin/mysql/admin-pass
+    value: ''
+    vtype: password
+
+- name: Set preseed info phpmyadmin/mysql/app-pass
+  debconf:
+    name: phpmyadmin
+    question: phpmyadmin/mysql/app-pass
+    value: ''
+    vtype: password
+
+- name: Set preseed info phpmyadmin/reconfigure-webserver
+  debconf:
+    name: phpmyadmin
+    question: phpmyadmin/reconfigure-webserver
+    value: ''
+    vtype: multiselect
+
+- name: Install phpmyadmin
+  apt:
+    pkg: phpmyadmin
+    state: latest

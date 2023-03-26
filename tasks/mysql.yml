@@ -1,0 +1,91 @@
+---
+- name: Install MySQL Server and backup packages
+  apt:
+    state: latest
+    pkg:
+      - mariadb-server
+      - python3-mysqldb
+      - automysqlbackup
+
+- name: Change MySQL charset to prevent MySQL error 1709
+  template:
+    src: templates/60-charset.cnf
+    dest: /etc/mysql/mariadb.conf.d/60-charset.cnf
+  when: ansible_distribution_major_version|int > 15
+  notify: restart mysql
+
+- name: Start Mysql Service
+  service:
+    name: mysql
+    state: restarted
+    enabled: true
+
+- name: Parse existing .my.cnf
+  shell: grep -s pass /home/pxm/.my.cnf | sed 's/password=//'
+  register: existingpass
+
+- name: Generate random MySQL otsmanager password
+  command: openssl rand -base64 18
+  register: randompass
+  when: not existingpass.stdout
+
+- set_fact:
+    mysql_otsmanager_pass: "{{ randompass.stdout if randompass is not skipped else existingpass.stdout }}"
+
+- name: Set MySQL otsmanager password (localhost)
+  mysql_user:
+    name: pxm
+    password: "{{ mysql_otsmanager_pass }}"
+    host: localhost
+    priv: "*.*:ALL,GRANT"
+    check_implicit_admin: yes
+
+- name: Save MySQL otsmanager password
+  template:
+    src: .my.cnf
+    dest: /home/pxm/.my.cnf
+    owner: pxm
+    group: pxm
+    mode: 0600
+  
+- name: Set MySQL otsmanager password (%)
+  mysql_user:
+    name: pxm
+    password: "{{ mysql_otsmanager_pass }}"
+    host: "%"
+    priv: "*.*:ALL,GRANT"
+    check_implicit_admin: yes
+
+- name: Check hostname
+  command: hostname -f
+  register: realhostname
+
+- name: Delete MySQL root accounts we don't want
+  mysql_user:
+    name: root
+    host: "{{item}}"
+    state: absent
+    check_implicit_admin: yes
+  with_items:
+    - 127.0.0.1
+    - ::1
+    - realhostname.stdout
+    - "%"
+
+- name: Ensure anonymous MySQL users are not in the database
+  mysql_user:
+    name: ""
+    host_all: yes
+    state: absent
+    check_implicit_admin: yes
+
+- name: Delete MySQL test database
+  mysql_db:
+    name: test
+    state: absent
+
+- name: Allow otsmanager to access automysqlbackup directory
+  file:
+    path: /var/lib/automysqlbackup
+    state: directory
+    group: pxm

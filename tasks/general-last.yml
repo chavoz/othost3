@@ -1,0 +1,8 @@
+---
+- name: Create public_html directory
+  file:
+    path: /home/pxm/www/public_html
+    owner: pxm
+    group: pxm
+    mode: 0755
+    state: directory
