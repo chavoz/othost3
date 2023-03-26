@@ -27,6 +27,8 @@
     host: localhost
     priv: "*.*:ALL,GRANT"
     check_implicit_admin: yes
+  login_user: root
+  login_password: 
 
 - name: Set MySQL otsmanager password (%)
   mysql_user:
@@ -35,6 +37,8 @@
     host: "%"
     priv: "*.*:ALL,GRANT"
     check_implicit_admin: yes
+  login_user: root
+  login_password: 
 
 - name: Check hostname
   command: hostname -f
